@@ -28,7 +28,7 @@ f1-strategy-predictor/
 ├── app/                   # App interactiva con Streamlit
 ├── README.md              # Este archivo
 └── requirements.txt       # Librerías necesarias
-
+```
 
 ## Dataset
 
@@ -41,8 +41,8 @@ Kaggle – Formula 1 World Championship (1950–2020) (https://www.kaggle.com/da
 Instala las dependencias:
 ```bash
 pip install -r requirements.txt
-
-...
+```
+A medida que avance el proyecto se irá actualizando
 
 ## Estado actual del proyecto
 
