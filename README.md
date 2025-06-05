@@ -34,7 +34,7 @@ f1-strategy-predictor/
 
 Estoy utilizando datos públicos de F1 disponibles en:
 
-Kaggle – Formula 1 World Championship (1950–2020) (https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020)
+**Kaggle – Formula 1 World Championship (1950–2020)** (https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020)
 
 ## Ejecución del proyecto
 
@@ -46,14 +46,13 @@ A medida que avance el proyecto se irá actualizando
 
 ## Estado actual del proyecto
 
-Exploración inicial de datos
+- Exploración inicial de datos
 
 ## 📜 Licencia
 MIT License. Uso libre para fines educativos y personales.
 
 ## ✍️ Autor
-
-Pol Pujol Santaella
-Estudiante de Ingeniería Informática
-GitHub: PolPujolSantaella
-LinkedIn: https://www.linkedin.com/in/polpujolsantaella/
+- Pol Pujol Santaella
+- Estudiante de Ingeniería Informática
+- GitHub: PolPujolSantaella
+- LinkedIn: https://www.linkedin.com/in/polpujolsantaella/
