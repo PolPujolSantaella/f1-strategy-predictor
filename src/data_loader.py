@@ -1,27 +1,92 @@
 import pandas as pd
 import os
+import streamlit as st
 
 DATA_PATH = "data/original"
 
-def load_data():
-    """
-    Load the F1 historical data from CSV files in the specified directory.
-    """
-    
-    try:
-        results = pd.read_csv(os.path.join(DATA_PATH, "results.csv"))
-        drivers = pd.read_csv(os.path.join(DATA_PATH, "drivers.csv"))
-        races = pd.read_csv(os.path.join(DATA_PATH, "races.csv"))
-        constructors = pd.read_csv(os.path.join(DATA_PATH, "constructors.csv"))
-        
-        df = results.merge(drivers, on='driverId', how='left') \
-            .merge(races, on='raceId', how='left') \
-            .merge(constructors, on='constructorId', how='left')
+@st.cache_data
+def load_drivers():
+    return pd.read_csv(os.path.join(DATA_PATH, "drivers.csv"))
 
-        df['driver'] = df['forename'] + ' ' + df['surname']
-        
-        return df
+@st.cache_data
+def load_races():
+    return pd.read_csv(os.path.join(DATA_PATH, "races.csv"))
 
-    except Exception as e:
-        print(f"Error loading data: {e}")
-        return pd.DataFrame()
+@st.cache_data
+def load_circuits():
+    return pd.read_csv(os.path.join(DATA_PATH, "circuits.csv"))
+
+@st.cache_data
+def load_results():
+    return pd.read_csv(os.path.join(DATA_PATH, "results.csv"))
+
+@st.cache_data
+def load_constructors():
+    return pd.read_csv(os.path.join(DATA_PATH, "constructors.csv"))
+
+@st.cache_data
+def get_driver_stats(surname: str):
+    drivers = load_drivers()
+    races = load_races()
+    results = load_results()
+    constructors = load_constructors()
+    circuits = load_circuits()
+
+    driver_info = drivers[drivers['surname'] == surname]
+    if driver_info.empty:
+        return None, None, None, None
+
+    driver_id = driver_info.iloc[0]['driverId']
+    driver_results = results[results['driverId'] == driver_id]
+    driver_races = driver_results.merge(races, on='raceId')
+    driver_races = driver_races.merge(constructors, on='constructorId')
+    driver_races = driver_races.merge(circuits, on='circuitId')
+
+    # 1. Evolución por temporada
+    season_summary = (
+        driver_races.groupby('year')
+        .agg({
+            'points': 'sum',
+            'positionOrder': lambda x: (x == 1).sum(),  # Número de victorias
+            'grid': lambda x: (x == 1).sum(),           # Poles
+            'statusId': lambda x: (x == 3).sum(),       # DNF (simplificado)
+        })
+        .rename(columns={'positionOrder': 'wins', 'grid': 'poles', 'statusId': 'dnf'})
+        .reset_index()
+    )
+    dnf_counts = driver_races.groupby('year')['positionOrder'].apply(lambda x: (x == 0).sum()).reset_index(name='dnf')
+    season_summary = season_summary.merge(dnf_counts, on='year')
+
+    # 2. Distribución de posiciones
+    if not driver_races.empty and 'positionOrder' in driver_races.columns:
+        pos_counts = driver_races['positionOrder'].dropna().value_counts().sort_index()
+        if not pos_counts.empty:
+            position_distribution = pos_counts.reset_index()
+            position_distribution.columns = ['Position', 'Count']
+            position_distribution['Position'] = position_distribution['Position'].apply(
+                lambda x: 'DNF' if x == 0 else str(int(x))
+            )
+        else:
+            position_distribution = pd.DataFrame(columns=['Position', 'Count'])
+            print(driver_races.columns)
+            print(driver_races.head())
+
+    else:
+        position_distribution = pd.DataFrame(columns=['Position', 'Count'])
+
+    # 3. Rendimiento por circuito
+    circuit_stats = (
+        driver_races.groupby('name')
+        .agg({
+            'positionOrder': lambda x: (x == 1).sum(),  # wins
+            'raceId': 'count',
+            'lat': 'first',
+            'lng': 'first',
+            'location': 'first',
+            'country': 'first',
+        })
+        .rename(columns={'positionOrder': 'wins', 'raceId': 'races'})
+        .reset_index()
+    )
+
+    return season_summary, position_distribution, circuit_stats, driver_info.iloc[0]

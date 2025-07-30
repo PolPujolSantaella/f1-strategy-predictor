@@ -1,30 +1,100 @@
+import plotly.express as px 
+import plotly.graph_objects as go
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns 
-import streamlit as st
 
-def plot_driver_stats(df: pd.DataFrame, driver_name: str):
-    """
-    Plot statistics for a specific F1 driver.
+def plot_driver_stats(season_df, driver_name):
+    fig = go.Figure()
     
-    Parameters:
-    - df: DataFrame containing F1 data.
-    - driver_name: Name of the driver to plot statistics for.
-    """
+    fig.add_trace(go.Scatter(
+        x=season_df['year'],
+        y=season_df['points'],
+        mode='lines+markers',
+        name='Points',
+        line=dict(color='firebrick', width=3)
+    ))
     
-    driver_df = df[df['driver'] == driver_name]
+    fig.add_trace(go.Bar(
+        x=season_df['year'],
+        y=season_df['wins'],
+        name='Victorias',
+        marker_color='goldenrod',
+        opacity=0.6
+    ))
+
+    fig.update_layout(
+        title=f'Evolución por Temporada - {driver_name}',
+        xaxis_title='Temporada',
+        yaxis_title='Puntos',
+        barmode='overlay',
+        template='plotly_white'
+    )
+    return fig
+
+# 2. Distribución de posiciones
+def plot_position_distribution(position_df, driver_name):
+    fig = px.bar(
+        position_df,
+        x='Position',
+        y='Count',
+        title=f'Distribución de Resultados - {driver_name}',
+        labels={'Count': 'Carreras', 'Position': 'Posición'},
+        color='Count',
+        color_continuous_scale='Tealgrn',
+    )
+
+    fig.update_layout(template='plotly_white')
+    return fig
+
+# 3. Mapa de rendimiento por circuito
+def plot_circuit_performance(circuit_df, driver_name):
+    fig = px.scatter_mapbox(
+        circuit_df,
+        lat='lat',
+        lon='lng',
+        size='wins',
+        hover_name='name',
+        hover_data={'races': True, 'wins': True, 'lat': False, 'lng': False},
+        color='wins',
+        zoom=1,
+        height=600,
+        color_continuous_scale='reds',
+    )
+
+    fig.update_layout(
+        mapbox_style='carto-positron',
+        title=f'Rendimiento por Circuito - {driver_name}',
+        margin={'r':0,'t':50,'l':0,'b':0}
+    )
+    return fig
+
+# 4. Comparativa de pilotos
+def plot_comparison(season_df1, season_df2, name1, name2):
+    merged = pd.merge(season_df1, season_df2, on='year', how='outer', suffixes=(f'_{name1}', f'_{name2}'))
+    merged = merged.sort_values('year')
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=merged['year'],
+        y=merged[f'points_{name1}'],
+        name=name1,
+        mode='lines+markers',
+        line=dict(color='blue')
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=merged['year'],
+        y=merged[f'points_{name2}'],
+        name=name2,
+        mode='lines+markers',
+        line=dict(color='crimson')
+    ))
+
+    fig.update_layout(
+        title=f'Comparativa de Puntos por Temporada: {name1} vs {name2}',
+        xaxis_title='Año',
+        yaxis_title='Puntos',
+        template='plotly_white'
+    )
+    return fig
     
-    if driver_df.empty:
-        st.warning("No data available for the selected driver.")
-        return
-    
-    fig, ax = plt.subplots(figsize=(10, 5))
-    
-    sns.lineplot(data=driver_df, x='year', y='positionOrder', marker='o', ax=ax)
-    
-    ax.invert_yaxis()
-    ax.set_title(f"Positions of {driver_name} for championship")
-    ax.set_xlabel("Year")
-    ax.set_ylabel("Final Position")
-    
-    st.pyplot(fig)

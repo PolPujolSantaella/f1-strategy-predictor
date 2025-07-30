@@ -1,15 +1,22 @@
 import streamlit as st 
+import pandas as pd
 import os
 import sys
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.data_loader import load_data
-from src.visualizations import plot_driver_stats
+from src.data_loader import load_drivers, load_circuits, get_driver_stats
+from src.url_images import pilot_images
+from src.visualizations import (
+                                plot_driver_stats,
+                                plot_position_distribution,
+                                plot_circuit_performance
+                                )
+
 
 st.set_page_config(page_title="F1 Dashboard", layout="wide")
 
-df = load_data()
 
 st.title("🏎️ F1 Dashboard - Historia y Predicción")
 st.markdown("Explora los datos históricos de la Fórmula 1 desde 1950 hasta 2020. Analiza pilotos, equipos, circuitos y predice resultados.")
@@ -55,7 +62,51 @@ option = st.sidebar.radio("",
 
 if option == "🏁 Pilots":
     st.title("Driver Statistics")
+    df = load_drivers()
+    pilots = sorted(df["surname"].dropna().unique())
+    pilot_selected = st.selectbox("Select a driver", pilots)
+    st.subheader(f"{pilot_selected}")
+    
+    if pilot_selected in pilot_images:
+        st.image(pilot_images[pilot_selected], width=250, caption=pilot_selected)
+    else:
+        st.info("No image available for this driver.")
+    
+    
+    pilot_data = df[df['surname'] == pilot_selected].iloc[0]
+    
+    st.markdown(f"""
+                **Name:** {pilot_data['forename']} {pilot_data['surname']}  
+                **Number:** {pilot_data['number'] if pd.notna(pilot_data['number']) else 'N/A'}  
+                **Date of Birth:** {pilot_data['dob']}  
+                **Nationality:** {pilot_data['nationality']}  
+                """)
+    
+    season_summary, position_dist, circuit_stats, _ = get_driver_stats(pilot_selected)
+    
+    if season_summary is None:
+        st.warning("No data available for this driver.")
+    else:
+        st.markdown("---")
+        st.subheader("Season Evolution")
+        fig_season = plot_driver_stats(season_summary, pilot_selected)
+        st.plotly_chart(fig_season, use_container_width=True)
+        
+        st.subheader("Position Distribution")
+        fig_position = plot_position_distribution(position_dist, pilot_selected)
+        st.plotly_chart(fig_position, use_container_width=True)
+        
+        st.subheader("Circuit Performance")
+        fig_circuit = plot_circuit_performance(circuit_stats, pilot_selected)
+        st.plotly_chart(fig_circuit, use_container_width=True)
+        
+    
+    
 elif option == "📍 Circuits":
     st.title("Circuit Statistics")
+    df = load_circuits()
+    circuits = sorted(df["name"].dropna().unique())
+    circuit_selected = st.selectbox("Select a circuit", circuits)
+
 elif option == "📅 Races":
     st.title("Race Statistics")
