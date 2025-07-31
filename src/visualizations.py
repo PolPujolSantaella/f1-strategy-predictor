@@ -2,6 +2,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 
+LINE_MODE = "lines+markers"
+
 def plot_driver_stats(season_summary, pilot_name):
     """Crear gráfico de evolución por temporada"""
     if season_summary is None or season_summary.empty:
@@ -13,32 +15,33 @@ def plot_driver_stats(season_summary, pilot_name):
     fig.add_trace(go.Scatter(
         x=season_summary['year'],
         y=season_summary['points'],
-        mode='lines+markers',
+        mode=LINE_MODE,
         name='Puntos',
-        line=dict(color='#FF1801', width=3),
-        marker=dict(size=8)
+        line={"color": "#FF1801", "width": 3},
+        marker={"size": 8}
     ))
     
     # Victorias por temporada (eje secundario)
     fig.add_trace(go.Scatter(
         x=season_summary['year'],
         y=season_summary['wins'],
-        mode='lines+markers',
+        mode=LINE_MODE,
         name='Victorias',
         yaxis='y2',
-        line=dict(color='#FFD700', width=3),
-        marker=dict(size=8)
+        line={"color": "#FFD700", "width": 3},
+        marker={"size": 8}
     ))
     
     fig.update_layout(
         title=f'Evolución de {pilot_name} por Temporada',
         xaxis_title='Temporada',
         yaxis_title='Puntos',
-        yaxis2=dict(
-            title='Victorias',
-            overlaying='y',
-            side='right'
-        ),
+        yaxis2 = {
+            'title': 'Victories',
+            'overlaying': 'y',
+            
+            'side': 'right',
+        },
         hovermode='x unified',
         template='plotly_white'
     )
@@ -131,16 +134,16 @@ def plot_comparison(season_df1, season_df2, name1, name2):
         x=merged['year'],
         y=merged[f'points_{name1}'],
         name=name1,
-        mode='lines+markers',
-        line=dict(color='blue')
+        mode=LINE_MODE,
+        line={"color": "blue"}
     ))
 
     fig.add_trace(go.Scatter(
         x=merged['year'],
         y=merged[f'points_{name2}'],
         name=name2,
-        mode='lines+markers',
-        line=dict(color='crimson')
+        mode=LINE_MODE,
+        line={"color": "red"}
     ))
 
     fig.update_layout(
