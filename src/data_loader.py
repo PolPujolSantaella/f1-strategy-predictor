@@ -26,6 +26,7 @@ def load_constructors():
 
 @st.cache_data
 def get_driver_stats(surname: str):
+    """Obtener estadísticas completas de un piloto"""
     drivers = load_drivers()
     races = load_races()
     results = load_results()
@@ -49,12 +50,22 @@ def get_driver_stats(surname: str):
             'points': 'sum',
             'positionOrder': lambda x: (x == 1).sum(),  # Número de victorias
             'grid': lambda x: (x == 1).sum(),           # Poles
-            'statusId': lambda x: (x == 3).sum(),       # DNF (simplificado)
+            'raceId': 'count',                          # Carreras totales
         })
-        .rename(columns={'positionOrder': 'wins', 'grid': 'poles', 'statusId': 'dnf'})
+        .rename(columns={'positionOrder': 'wins', 'grid': 'poles', 'raceId': 'races'})
         .reset_index()
     )
-    dnf_counts = driver_races.groupby('year')['positionOrder'].apply(lambda x: (x == 0).sum()).reset_index(name='dnf')
+    
+    # Calcular podios (posiciones 1, 2, 3)
+    podium_counts = driver_races.groupby('year')['positionOrder'].apply(
+        lambda x: ((x >= 1) & (x <= 3)).sum()
+    ).reset_index(name='podiums')
+    season_summary = season_summary.merge(podium_counts, on='year')
+    
+    # Calcular DNFs
+    dnf_counts = driver_races.groupby('year')['positionOrder'].apply(
+        lambda x: (x == 0).sum()
+    ).reset_index(name='dnf')
     season_summary = season_summary.merge(dnf_counts, on='year')
 
     # 2. Distribución de posiciones
@@ -68,9 +79,6 @@ def get_driver_stats(surname: str):
             )
         else:
             position_distribution = pd.DataFrame(columns=['Position', 'Count'])
-            print(driver_races.columns)
-            print(driver_races.head())
-
     else:
         position_distribution = pd.DataFrame(columns=['Position', 'Count'])
 
