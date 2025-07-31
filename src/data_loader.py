@@ -25,7 +25,7 @@ def load_constructors():
     return pd.read_csv(os.path.join(DATA_PATH, "constructors.csv"))
 
 @st.cache_data
-def get_driver_stats(surname: str):
+def get_driver_stats(driverRef: str):
     """Obtener estadísticas completas de un piloto"""
     drivers = load_drivers()
     races = load_races()
@@ -33,7 +33,7 @@ def get_driver_stats(surname: str):
     constructors = load_constructors()
     circuits = load_circuits()
 
-    driver_info = drivers[drivers['surname'] == surname]
+    driver_info = drivers[drivers['driverRef'] == driverRef]
     if driver_info.empty:
         return None, None, None, None
 

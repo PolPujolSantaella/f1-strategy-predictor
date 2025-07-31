@@ -6,10 +6,10 @@ def create_sidebar():
     if os.path.exists("img/f1_logo.jpg"):
         st.sidebar.image("img/f1_logo.jpg", width=180)
     
-    st.sidebar.markdown('<div class="sidebar-title">📊 Analysis</div>', unsafe_allow_html=True)
+    st.sidebar.markdown('<div class="sidebar-title"> Analysis</div>', unsafe_allow_html=True)
 
     option = st.sidebar.radio("",
-        ["📍 Circuits", "🏁 Pilots", "📅 Races"],
+        ["📍 Circuits", "🏁 Pilots", "📅 Races", "🆚 Compare"],
         key="navigation"
     )
     

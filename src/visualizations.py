@@ -1,6 +1,5 @@
 import plotly.express as px 
 import plotly.graph_objects as go
-import pandas as pd
 
 LINE_MODE = "lines+markers"
 
@@ -123,34 +122,22 @@ def plot_circuit_performance(circuit_stats, pilot_name):
     return fig
 
 
-# 4. Comparativa de pilotos
-def plot_comparison(season_df1, season_df2, name1, name2):
-    merged = pd.merge(season_df1, season_df2, on='year', how='outer', suffixes=(f'_{name1}', f'_{name2}'))
-    merged = merged.sort_values('year')
-
+def plot_evolution_points_season(season1, season2, name1, name2):
     fig = go.Figure()
-
     fig.add_trace(go.Scatter(
-        x=merged['year'],
-        y=merged[f'points_{name1}'],
+        x=season1['year'],
+        y=season1['points'], 
+        mode = LINE_MODE,
         name=name1,
-        mode=LINE_MODE,
-        line={"color": "blue"}
-    ))
-
-    fig.add_trace(go.Scatter(
-        x=merged['year'],
-        y=merged[f'points_{name2}'],
-        name=name2,
-        mode=LINE_MODE,
         line={"color": "red"}
     ))
-
-    fig.update_layout(
-        title=f'Comparativa de Puntos por Temporada: {name1} vs {name2}',
-        xaxis_title='Año',
-        yaxis_title='Puntos',
-        template='plotly_white'
-    )
-    return fig
+    fig.add_trace(go.Scatter(
+        x=season2['year'],
+        y=season2['points'],
+        mode=LINE_MODE,
+        name=name2, 
+        line={"color": "blue"}
+    ))
     
+    fig.update_layout(title="Points per Season", xaxis_title="Season", yaxis_title="Points")
+    return fig

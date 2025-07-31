@@ -52,18 +52,22 @@ def display_pilots_section():
     
     try:
         df = load_drivers()
-        pilots = sorted(df["surname"].dropna().unique())
+        pilots = sorted(df["driverRef"].dropna().unique())
+        
+        pilots_upper = [p.upper() for p in pilots]
         
         pilot_selected = st.selectbox(
             "Select a driver for statistics:",
-            pilots,
+            pilots_upper,
             key="pilot_select"
         )
+        
+        pilot_selected = pilot_selected.lower()
         
         st.markdown('</div>', unsafe_allow_html=True)
         
         if pilot_selected:
-            pilot_data = df[df['surname'] == pilot_selected].iloc[0]
+            pilot_data = df[df['driverRef'] == pilot_selected.lower()].iloc[0]
             
             # Información del piloto con diseño mejorado
             col1, col2 = st.columns(2)

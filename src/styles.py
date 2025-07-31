@@ -46,9 +46,9 @@ def load_css():
     .main-header {
         background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         color: white;
-        padding: 3rem 2rem;
+        padding: 2rem 5rem;
         border-radius: 20px;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
         text-align: center;
         box-shadow: 0 10px 40px var(--shadow-medium);
         position: relative;
@@ -110,6 +110,7 @@ def load_css():
         border-radius: 15px;
         padding: 1.2rem;
         margin: 0.8rem 0;
+        margin-left: 15px;
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         transition: all 0.3s ease;

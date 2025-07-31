@@ -3,7 +3,7 @@ from src.styles import load_css
 
 from ui.header import create_header
 from ui.sidebar import create_sidebar
-from ui.sections import drivers, circuits, races
+from ui.sections import drivers, circuits, races, comparation
 
 def main():
     load_css()
@@ -12,11 +12,13 @@ def main():
     
     if option == "🏁 Pilots":
         drivers.display_pilots_section()
-    
     elif option == "📍 Circuits":
         circuits.display_circuits_section()
     elif option == "📅 Races":
         races.display_races_section()
+    elif option == "🆚 Compare":
+        comparation.display_comparation_section()
+        
     
     st.markdown("---")
     st.markdown("""
