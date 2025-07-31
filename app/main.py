@@ -7,7 +7,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.data_loader import load_drivers, load_circuits, get_driver_stats
-from src.url_images import pilot_images
+from src.url_images import pilot_images, get_image_from_wikipedia
 from src.visualizations import (
                                 plot_driver_stats,
                                 plot_position_distribution,
@@ -65,10 +65,18 @@ if option == "🏁 Pilots":
     df = load_drivers()
     pilots = sorted(df["surname"].dropna().unique())
     pilot_selected = st.selectbox("Select a driver", pilots)
-    st.subheader(f"{pilot_selected}")
     
-    if pilot_selected in pilot_images:
-        st.image(pilot_images[pilot_selected], width=250, caption=pilot_selected)
+    if pilot_selected:
+        st.subheader(f"{pilot_selected}")
+        
+        wiki_url = df.loc[df["surname"] == pilot_selected, "url"].values[0]
+        img_url = get_image_from_wikipedia(wiki_url)
+        
+        if img_url:
+            st.image(img_url, width=250, caption=pilot_selected)
+        else:
+            st.info("No image available for this driver in Wikipedia.")
+        
     else:
         st.info("No image available for this driver.")
     

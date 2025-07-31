@@ -47,25 +47,32 @@ def plot_position_distribution(position_df, driver_name):
 
 # 3. Mapa de rendimiento por circuito
 def plot_circuit_performance(circuit_df, driver_name):
-    fig = px.scatter_mapbox(
-        circuit_df,
-        lat='lat',
-        lon='lng',
-        size='wins',
-        hover_name='name',
-        hover_data={'races': True, 'wins': True, 'lat': False, 'lng': False},
-        color='wins',
-        zoom=1,
-        height=600,
-        color_continuous_scale='reds',
-    )
+    filtered_df = circuit_df[circuit_df['wins'] > 0].copy()
 
-    fig.update_layout(
-        mapbox_style='carto-positron',
-        title=f'Rendimiento por Circuito - {driver_name}',
-        margin={'r':0,'t':50,'l':0,'b':0}
+    sorted_df = filtered_df.sort_values(by='wins', ascending=True)
+
+    fig = px.bar(
+        sorted_df,
+        x='wins',
+        y='name',
+        orientation='h',
+        text='wins',
+        color='wins',
+        color_continuous_scale='reds',
+        labels={'wins': 'Victories', 'name': 'Circuit'},
+        height=600
     )
+    
+    fig.update_traces(textposition='outside')
+    fig.update_layout(
+        title=f'Performance for Circuits - {driver_name}',
+        xaxis_title='Victories',
+        yaxis_title='Circuit',
+        margin={'r': 20, 't': 50, 'l': 100, 'b': 20},
+    )
+    
     return fig
+
 
 # 4. Comparativa de pilotos
 def plot_comparison(season_df1, season_df2, name1, name2):
