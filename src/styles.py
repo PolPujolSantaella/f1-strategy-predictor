@@ -32,6 +32,7 @@ def load_css():
     .main {
         padding-top: 1rem;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        backgorund: black;
     }
     
     /* Typography Improvements */

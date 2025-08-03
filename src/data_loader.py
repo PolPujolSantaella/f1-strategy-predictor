@@ -1,5 +1,5 @@
-import pandas as pd
 import os
+import pandas as pd
 import streamlit as st
 
 DATA_PATH = "data/original"
@@ -26,7 +26,7 @@ def load_constructors():
 
 @st.cache_data
 def get_driver_stats(driver_ref: str):
-    """Obtener estadísticas completas de un piloto"""
+    """Return statistics of a specific driver."""
     drivers = load_drivers()
     races = load_races()
     results = load_results()
@@ -39,50 +39,55 @@ def get_driver_stats(driver_ref: str):
 
     driver_id = driver_info.iloc[0]['driverId']
     driver_results = results[results['driverId'] == driver_id]
-    driver_races = driver_results.merge(races, on='raceId')
-    driver_races = driver_races.merge(constructors, on='constructorId')
-    driver_races = driver_races.merge(circuits, on='circuitId')
-
-    # 1. Evolución por temporada
+    driver_races = (
+        driver_results
+        .merge(races, on='raceId')
+        .merge(constructors, on='constructorId')
+        .merge(circuits, on='circuitId')
+    )
+    
+    # 1. Season Summary
     season_summary = (
         driver_races.groupby('year')
         .agg({
             'points': 'sum',
-            'positionOrder': lambda x: (x == 1).sum(),  # Número de victorias
-            'grid': lambda x: (x == 1).sum(),           # Poles
-            'raceId': 'count',                          # Carreras totales
+            'positionOrder': lambda x: (x == 1).sum(),  # wins
+            'grid': lambda x: (x == 1).sum(),           # poles
+            'raceId': 'count',                          # races
         })
         .rename(columns={'positionOrder': 'wins', 'grid': 'poles', 'raceId': 'races'})
         .reset_index()
     )
     
-    # Calcular podios (posiciones 1, 2, 3)
-    podium_counts = driver_races.groupby('year')['positionOrder'].apply(
+    podiums = driver_races.groupby('year')['positionOrder'].apply(
         lambda x: ((x >= 1) & (x <= 3)).sum()
     ).reset_index(name='podiums')
-    season_summary = season_summary.merge(podium_counts, on='year')
     
-    # Calcular DNFs
-    dnf_counts = driver_races.groupby('year')['positionOrder'].apply(
+    dnfs = driver_races.groupby('year')['positionOrder'].apply(
         lambda x: (x == 0).sum()
     ).reset_index(name='dnf')
-    season_summary = season_summary.merge(dnf_counts, on='year')
+    
+    season_summary = (
+        season_summary
+        .merge(podiums, on='year')
+        .merge(dnfs, on='year')
+    )
 
-    # 2. Distribución de posiciones
-    if not driver_races.empty and 'positionOrder' in driver_races.columns:
-        pos_counts = driver_races['positionOrder'].dropna().value_counts().sort_index()
-        if not pos_counts.empty:
-            position_distribution = pos_counts.reset_index()
-            position_distribution.columns = ['Position', 'Count']
-            position_distribution['Position'] = position_distribution['Position'].apply(
-                lambda x: 'DNF' if x == 0 else str(int(x))
-            )
-        else:
-            position_distribution = pd.DataFrame(columns=['Position', 'Count'])
-    else:
-        position_distribution = pd.DataFrame(columns=['Position', 'Count'])
-
-    # 3. Rendimiento por circuito
+    # 2. Position Distribution
+    position_distribution = (
+        driver_races['positionOrder']
+        .dropna()
+        .value_counts()
+        .sort_index()
+        .reset_index()
+    )
+    
+    position_distribution.columns = ['Position', 'Count']
+    position_distribution['Position'] = position_distribution['Position'].apply(
+        lambda x: 'DNF' if x == 0 else str(int(x))
+    )
+    
+    # 3. Performance by Circuit
     circuit_stats = (
         driver_races.groupby('name')
         .agg({
@@ -101,53 +106,51 @@ def get_driver_stats(driver_ref: str):
 
 
 @st.cache_data
-def get_winners_circuits(name):
+def get_winners_circuits(circuit_name: str):
+    
     circuits = load_circuits()
-    
-    circuit_row = circuits[circuits['name'] == name]
-    
     races = load_races()
     results = load_results()
     drivers = load_drivers()
     
-    merged_df = pd.merge(races, circuit_row, on="circuitId")
-    merged_df = pd.merge(merged_df, results, on="raceId")
-    merged_df = pd.merge(merged_df, drivers, on="driverId")
+    circuit_row = circuits[circuits['name'] == circuit_name]
+    merged_df = races.merge(circuit_row, on="circuitId")
+    merged_df = merged_df.merge(results, on="raceId")
+    merged_df = merged_df.merge(drivers, on="driverId")
     
-    filtered = merged_df[merged_df['positionOrder'] == 1]
+    winners_df = merged_df[merged_df['positionOrder'] == 1]
   
     top_winners = (
-        filtered.groupby(["url", "forename", "surname"])["positionOrder"]
+        winners_df
+        .groupby(["url", "forename", "surname"])["positionOrder"]
         .count()
         .reset_index()
         .rename(columns={"positionOrder": "wins"})
         .sort_values(by="wins", ascending=False)
         .head(3)
-    ) 
+    )
     
     top_winners["driver"] = top_winners["forename"] + " " + top_winners["surname"]
     
     return top_winners
 
-
-st.cache_data
-def get_constructor_winners(name):
+@st.cache_data
+def get_constructor_winners(circuit_name: str):
     circuits = load_circuits()
-    
-    circuit_row = circuits[circuits['name'] == name]
-    
     races = load_races()
     results = load_results()
     constructors = load_constructors()
     
-    merged_df = pd.merge(races, circuit_row, on="circuitId")
-    merged_df = pd.merge(merged_df, results, on="raceId")
-    merged_df = pd.merge(merged_df, constructors, on="constructorId")
+    circuit_row = circuits[circuits['name'] == circuit_name]
+    merged_df = races.merge(circuit_row, on="circuitId")
+    merged_df = merged_df.merge(results, on="raceId")
+    merged_df = merged_df.merge(constructors, on="constructorId")
     
-    filtered = merged_df[merged_df['positionOrder'] == 1]
+    winners_df = merged_df[merged_df['positionOrder'] == 1]
   
-    top_winners = (
-        filtered.groupby(["url", "name"])["positionOrder"]
+    top_constructors = (
+        winners_df
+        .groupby(["url", "name"])["positionOrder"]
         .count()
         .reset_index()
         .rename(columns={"positionOrder": "wins"})
@@ -155,6 +158,6 @@ def get_constructor_winners(name):
         .head(3)
     ) 
     
-    top_winners["constructor"] = top_winners["name"]
+    top_constructors["constructor"] = top_constructors["name"]
     
-    return top_winners
+    return top_constructors
