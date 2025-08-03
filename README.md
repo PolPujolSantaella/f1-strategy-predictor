@@ -1,58 +1,66 @@
 # 🏁 F1 Strategy Predictor
-Predicción de las estrategias de carrera en F1 usando Machine Learning.
+Welcome to F1 Strategy Predictor! Your ideal co-driver to explore historic Formula 1 data and help predict winning strategies for each circuit.
 
-## Objetivo
-El objetivo principal de este proyecto es analizar datos històricos de F1 y constuir un modelo capaz de predecir decisiones estratégicas como las **paradas en boxes**, **tipo de neumático utilizado**, y **eficiencia de las estrategias de carrera**. Está pensado como una aplicación real de **Data Science, Machine Learning y Visualización**, orientada a un entorno competitivo como la F1.
+## 🚀 What is this app?
 
-## Tecnologías 
+An interactive tool built with Streamlit that lets you:
+
+- Explore circuits and their characteristics.
+- See the top 5 drivers with the most wins on each circuit
+- Analyze driver and race statistics and trends
+- Visualize historical data with clear, dynamic charts
+
+## 🛠 Tecnologías 
+
 - Python 3
+- Streamlit
 - pandas, NumPy, scikit-learn
-- XGBoost / LightGBM
 - matplotlib, seaborn, Plotly
-- Streamlit (para la demo)
 - Jupyter Notebooks
+- Basic machine learning models for predictions (in development)
 
-## Intención para las predicciones?
+## 🔗 Deployed app link
 
-- ¿Parará un piloto en la próxima vuelta?
-- ¿Qué tipo de neumático usará en su próxima parada?
-- ¿Qué tan eficiente es la estrategia usada comparada con una alternativa?
+Try the app live here:
 
-## Estructura
+[F1-Historic-Analysis](https://f1-historic-analysis.streamlit.app/)
 
-```bash
-f1-strategy-predictor/
-├── data/                  # Datasets CSV/JSON
-├── notebooks/             # Análisis exploratorio y pruebas
-├── src/                   # Scripts de ML
-├── app/                   # App interactiva con Streamlit
-├── README.md              # Este archivo
-└── requirements.txt       # Librerías necesarias
-```
+## 📁 Project Structure
 
-## Dataset
+- `app.py`     -- main app entry point
+- `ui/`        -- interface components and sections
+- `data/`      -- datasets
+- `notebooks/` -- Jupyter Notebooks for machine learning
+- `src/`       -- Data & Visualization functions
+- `assets/`    -- Local images
 
-Estoy utilizando datos públicos de F1 disponibles en:
 
-**Kaggle – Formula 1 World Championship (1950–2020)** (https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020)
+## 📦 How to run locally
 
-## Ejecución del proyecto
+1. Clone the repo
+    `git clone https://github.com/PolPujolSantaella/f1-strategy-predictor.git`
 
-Instala las dependencias:
-```bash
-pip install -r requirements.txt
-```
-A medida que avance el proyecto se irá actualizando
+2. Create and activate a virtual environment
+    `python -m venv venv`
 
-## Estado actual del proyecto
+3. Install dependencies
+    `pip install -r requirements.txt`
 
-- Exploración inicial de datos
+4. Run the app
+    `streamlit run app.py`
+
+## 🙌 Contributions
+
+Feel free to open issues or pull requests!
+Want to improve the app, add new analyses or charts? All feedback is welcome!
 
 ## 📜 Licencia
 MIT License. Uso libre para fines educativos y personales.
 
-## ✍️ Autor
-- Pol Pujol Santaella
-- Estudiante de Ingeniería Informática
+## ⚡ Contact
+Developed by Pol Pujol Santaella
+- Computer Scientist
 - GitHub: PolPujolSantaella
 - LinkedIn: https://www.linkedin.com/in/polpujolsantaella/
+
+## Enjoy F1 with data on your side! 🏁
