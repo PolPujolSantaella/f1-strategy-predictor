@@ -122,7 +122,7 @@ def load_css():
     }
     
     .stRadio label {
-        font-size: 1.2rem !important;
+        font-size: 5.2rem !important;
         font-weight: 700 !important; 
         color: white !important;
         text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3) !important;

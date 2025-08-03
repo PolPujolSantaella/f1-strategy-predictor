@@ -1,5 +1,10 @@
 import plotly.express as px 
 import plotly.graph_objects as go
+import pandas as pd
+import streamlit as st
+
+from src.url_images import get_image_from_wikipedia
+
 
 LINE_MODE = "lines+markers"
 
@@ -141,3 +146,101 @@ def plot_evolution_points_season(season1, season2, name1, name2):
     
     fig.update_layout(title="Points per Season", xaxis_title="Season", yaxis_title="Points")
     return fig
+
+
+def plot_key_performance(data1, data2, name1, name2):
+    df_compare = pd.DataFrame({
+        "Metric": list(data1.keys()),
+        name1: list(data1.values()),
+        name2: list(data2.values())
+    })
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(x=df_compare["Metric"], y=df_compare[name1], name=name1, marker_color='crimson'))
+    fig.add_trace(go.Bar(x=df_compare["Metric"], y=df_compare[name2], name=name2, marker_color='royalblue'))
+    fig.update_layout(barmode='group', title="Key Stats", yaxis_title="Count")
+    
+    return fig
+
+
+def plot_final_position_distribution(pos1, pos2, name1, name2):
+    df_pos = pd.DataFrame({
+        "Position": ["Wins", "Podiums", "Others"],
+        name1: pos1.values,
+        name2: pos2.values
+    })
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(name=name1, x=df_pos["Position"], y=df_pos[name1], marker_color='tomato'))
+    fig.add_trace(go.Bar(name=name2, x=df_pos["Position"], y=df_pos[name2], marker_color='dodgerblue'))
+    fig.update_layout(barmode='stack', title="Race Result Distribution")
+    
+    return fig
+
+
+def plot_average_points_season(avg1, avg2, name1, name2):
+    df_avg = pd.DataFrame({
+        "Driver": [name1, name2],
+        "Avg Points / Season": [avg1, avg2]
+    })
+
+    fig = px.bar(df_avg, x="Driver", y="Avg Points / Season", color="Driver", 
+                color_discrete_map={name1: "firebrick", name2: "navy"},
+                text_auto='.2s')
+    fig.update_layout(title="Average Points per Season", showlegend=False)
+    
+    return fig
+
+
+def display_top3_winners_cards(df_top3):
+    st.markdown("## 🏆 Top 3 Winners")
+
+    cols = st.columns(3)
+
+    for i, (_, row) in enumerate(df_top3.iterrows()):
+        with cols[i]:
+            image_url = get_image_from_wikipedia(row['url']) or "default_driver.png"
+
+            st.markdown(f"""
+            <div style="
+                background-color: white;
+                border: 2px solid #ccc;
+                border-radius: 15px;
+                padding: 20px;
+                text-align: center;
+                box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+            ">
+                <h3 style="margin-bottom: 15px; color: black">{row['driver']}</h3>
+                <img src="{image_url}" alt="{row['driver']}" style="width:150px; border-radius: 10px;" />
+                <div style="font-size: 24px; font-weight: bold; margin-top: 10px; color: black;">
+                    🏁 Victorias: {row['wins']}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            
+def display_top3_constructors_cards(df_top3):
+    st.markdown("## 🏆 Top 3 Constructor Winners")
+
+    cols = st.columns(3)
+
+    for i, (_, row) in enumerate(df_top3.iterrows()):
+        with cols[i]:
+            image_url = get_image_from_wikipedia(row['url']) or "default_driver.png"
+
+            st.markdown(f"""
+            <div style="
+                background-color: white;
+                border: 2px solid #ccc;
+                border-radius: 15px;
+                padding: 20px;
+                text-align: center;
+                box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+            ">
+                <h3 style="margin-bottom: 15px; color: black">{row['constructor']}</h3>
+                <img src="{image_url}" alt="{row['constructor']}" style="width:150px; border-radius: 10px;" />
+                <div style="font-size: 24px; font-weight: bold; margin-top: 10px; color: black;">
+                    🏁 Victorias: {row['wins']}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)

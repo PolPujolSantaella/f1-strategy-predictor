@@ -8,18 +8,22 @@ def create_sidebar():
     
     st.sidebar.markdown('<div class="sidebar-title"> Analysis</div>', unsafe_allow_html=True)
 
-    option = st.sidebar.radio("",
+    option = st.sidebar.radio("Navigation",
         ["📍 Circuits", "🏁 Pilots", "📅 Races", "🆚 Compare"],
-        key="navigation"
+        label_visibility="collapsed"
     )
     
     st.sidebar.markdown("---")
     st.sidebar.markdown("""
-    **Caracteristics:**
-    - Historical data from 1950 to 2024
-    - Analysis of drivers
-    - Statistics of circuits
-    - Interactive visualizations
-    """)
+    <div style='margin-top: 150px;'>
+        <strong>Characteristics:</strong>
+        <ul>
+            <li>Historical data from 1950 to 2024</li>
+            <li>Analysis of drivers</li>
+            <li>Statistics of circuits</li>
+            <li>Interactive visualizations</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
     
     return option

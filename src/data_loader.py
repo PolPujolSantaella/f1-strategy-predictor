@@ -25,7 +25,7 @@ def load_constructors():
     return pd.read_csv(os.path.join(DATA_PATH, "constructors.csv"))
 
 @st.cache_data
-def get_driver_stats(driverRef: str):
+def get_driver_stats(driver_ref: str):
     """Obtener estadísticas completas de un piloto"""
     drivers = load_drivers()
     races = load_races()
@@ -33,7 +33,7 @@ def get_driver_stats(driverRef: str):
     constructors = load_constructors()
     circuits = load_circuits()
 
-    driver_info = drivers[drivers['driverRef'] == driverRef]
+    driver_info = drivers[drivers['driverRef'] == driver_ref]
     if driver_info.empty:
         return None, None, None, None
 
@@ -98,3 +98,63 @@ def get_driver_stats(driverRef: str):
     )
 
     return season_summary, position_distribution, circuit_stats, driver_info.iloc[0]
+
+
+@st.cache_data
+def get_winners_circuits(name):
+    circuits = load_circuits()
+    
+    circuit_row = circuits[circuits['name'] == name]
+    
+    races = load_races()
+    results = load_results()
+    drivers = load_drivers()
+    
+    merged_df = pd.merge(races, circuit_row, on="circuitId")
+    merged_df = pd.merge(merged_df, results, on="raceId")
+    merged_df = pd.merge(merged_df, drivers, on="driverId")
+    
+    filtered = merged_df[merged_df['positionOrder'] == 1]
+  
+    top_winners = (
+        filtered.groupby(["url", "forename", "surname"])["positionOrder"]
+        .count()
+        .reset_index()
+        .rename(columns={"positionOrder": "wins"})
+        .sort_values(by="wins", ascending=False)
+        .head(3)
+    ) 
+    
+    top_winners["driver"] = top_winners["forename"] + " " + top_winners["surname"]
+    
+    return top_winners
+
+
+st.cache_data
+def get_constructor_winners(name):
+    circuits = load_circuits()
+    
+    circuit_row = circuits[circuits['name'] == name]
+    
+    races = load_races()
+    results = load_results()
+    constructors = load_constructors()
+    
+    merged_df = pd.merge(races, circuit_row, on="circuitId")
+    merged_df = pd.merge(merged_df, results, on="raceId")
+    merged_df = pd.merge(merged_df, constructors, on="constructorId")
+    
+    filtered = merged_df[merged_df['positionOrder'] == 1]
+  
+    top_winners = (
+        filtered.groupby(["url", "name"])["positionOrder"]
+        .count()
+        .reset_index()
+        .rename(columns={"positionOrder": "wins"})
+        .sort_values(by="wins", ascending=False)
+        .head(3)
+    ) 
+    
+    top_winners["constructor"] = top_winners["name"]
+    
+    return top_winners

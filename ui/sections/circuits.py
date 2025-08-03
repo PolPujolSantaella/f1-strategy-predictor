@@ -1,7 +1,8 @@
 
 import streamlit as st
-from src.data_loader import load_circuits
+from src.data_loader import load_circuits, get_winners_circuits, get_constructor_winners
 from src.url_images import get_image_from_wikipedia
+from src.visualizations import display_top3_winners_cards, display_top3_constructors_cards
 
 
 def display_circuits_section():
@@ -67,9 +68,15 @@ def display_circuits_section():
                         
                 st.markdown("#### Análisis de Circuito")    
                 
-                          
-            # Aquí podrías agregar más análisis específicos del circuito
-            st.info("💡 Funcionalidad de análisis detallado de circuitos en desarrollo.")
+            tab1, tab2,  = st.tabs(["TOP 3 Winners", "TOP 3 Constructor Winners"])
+            
+            with tab1:
+                winners = get_winners_circuits(circuit_selected)
+                display_top3_winners_cards(winners)
+                
+            with tab2:
+                constructor_winners = get_constructor_winners(circuit_selected)
+                display_top3_constructors_cards(constructor_winners)            
             
     except (KeyError, IndexError, ValueError) as e:
         st.error(f"❌ Error al procesar los datos de circuitos: {str(e)}")

@@ -7,7 +7,23 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.data_loader import load_drivers, get_driver_stats
 from src.url_images import get_image_from_wikipedia
-from src.visualizations import plot_evolution_points_season
+from src.visualizations import plot_evolution_points_season, plot_key_performance, plot_final_position_distribution, plot_average_points_season
+
+def resume(stats):
+    total_races = stats['races'].sum()
+    total_wins = stats['wins'].sum()
+    total_poles = stats['poles'].sum()
+    total_podiums = stats['podiums'].sum()
+    avg_position = stats['wins'].sum() / stats['races'].sum() if stats['races'].sum() > 0 else 0
+    total_points = stats['points'].sum()
+    return {
+        'Races': total_races,
+        'Wins': total_wins,
+        'Poles': total_poles,
+        'Podiums': total_podiums,
+        'Points': total_points,
+        'Avg Win Rate': avg_position * 100,
+    }
 
 def display_comparation_section():
     st.markdown("## 🆚 Compare")
@@ -35,22 +51,6 @@ def display_comparation_section():
             st.warning("Data no available for one of the drivers")
             return
         
-        def resume(stats):
-            total_races = stats['races'].sum()
-            total_wins = stats['wins'].sum()
-            total_poles = stats['poles'].sum()
-            total_podiums = stats['podiums'].sum()
-            avg_position = stats['wins'].sum() / stats['races'].sum() if stats['races'].sum() > 0 else 0
-            total_points = stats['points'].sum()
-            return {
-                'Races': total_races,
-                'Wins': total_wins,
-                'Poles': total_poles,
-                'Podiums': total_podiums,
-                'Points': total_points,
-                'Avg Win Rate': avg_position * 100,
-            }
-            
         resume1 = resume(season1)
         resume2 = resume(season2)
         
@@ -59,7 +59,7 @@ def display_comparation_section():
             img1 = get_image_from_wikipedia(info1['url'])
             st.image(img1, caption=f"{info1['forename']} {info1['surname']}", use_container_width =True)
         with col2:
-             st.markdown("<h1 style='text-align:center; margin-top: 100px;'>VS</h1>", unsafe_allow_html=True)
+             st.markdown("<h1 style='text-align:center; margin-top: 150px;'>VS</h1>", unsafe_allow_html=True)
         with col3:
             img2 = get_image_from_wikipedia(info2['url'])
             st.image(img2, caption=f"{info2['forename']} {info2['surname']}", use_container_width=True)
@@ -91,8 +91,39 @@ def display_comparation_section():
             "🎯 Positions Overview", 
             "📉 Avg Points per Season"
         ]) 
+        
         with tab1:
             st.markdown("#### Evolution of Points by Season")
             fig_season = plot_evolution_points_season(season1, season2, pilot1, pilot2)
             st.plotly_chart(fig_season, use_container_width=True)
+            
+        with tab2:
+            st.markdown("#### Key Performance Comparison")
+
+            data1 = resume(season1)
+            data2 = resume(season2)
+            fig = plot_key_performance(data1, data2, pilot1, pilot2)
+            st.plotly_chart(fig, use_container_width=True)
+            
+        with tab3:
+            st.markdown("#### Final Positions Distribution")
+            def get_position_dist(season_summary):
+                pos_counts = season_summary.copy()
+                pos_counts = pos_counts[["wins", "podiums", "races"]].sum()
+                pos_counts["Others"] = pos_counts["races"] - (pos_counts["wins"] + pos_counts["podiums"])
+                return pos_counts[["wins", "podiums", "Others"]]
+
+            pos1 = get_position_dist(season1)
+            pos2 = get_position_dist(season2)
+
+            fig = plot_final_position_distribution(pos1, pos2, pilot1, pilot2)
+            st.plotly_chart(fig, use_container_width=True)
+
+        with tab4:
+            st.markdown("#### Average Points per Season")
+            avg1 = season1["points"].mean()
+            avg2 = season2["points"].mean()
+        
+            fig = plot_average_points_season(avg1, avg2, pilot1, pilot2)
+            st.plotly_chart(fig, use_container_width=True)
         
