@@ -130,7 +130,7 @@ def get_winners_circuits(circuit_name: str):
         .head(3)
     )
     
-    top_winners["driver"] = top_winners["forename"] + " " + top_winners["surname"]
+    top_winners["driver"] = top_winners["surname"]
     
     return top_winners
 

@@ -1,9 +1,10 @@
 
 import streamlit as st
+import pandas as pd
 from src.data_loader import load_circuits, get_winners_circuits, get_constructor_winners
 from src.url_images import get_image_from_wikipedia
 from src.visualizations import display_top3_winners_cards, display_top3_constructors_cards
-from typing import Optional
+from typing import Optional, Dict, Any
 
 
 def display_circuits_section() -> None:
@@ -11,7 +12,6 @@ def display_circuits_section() -> None:
     Display the circuits analysis section.
     Allows selecting a circuit to view its details, image, and top winners.
     """
-    st.markdown('<div class="stat-card">', unsafe_allow_html=True)
     st.markdown("### 🏁 Circuit Analysis")
     
     try:
@@ -28,14 +28,19 @@ def display_circuits_section() -> None:
         
         if selected_circuit :
             circuit_data = get_circuit_data(df, selected_circuit)
-            display_circuit_info(circuit_data)
             
+            display_circuit_info(circuit_data)
+                
             wiki_url = circuit_data.get("url", "")
             display_circuit_image(wiki_url, circuit_data.get('name', ''))
             
             st.markdown("### Circuit Analysis")
             
-            tab1, tab2, = st.tabs(["🏆 TOP 3 Winners", "🏆 TOP 3 Constructor Winners"])
+            tab1, tab2, tab3 = st.tabs([
+                "🏆 Driver Winners", 
+                "🏆 Constructor Winners",
+                "🌍 Circuit Map"
+            ])
             
             with tab1:
                 winners = get_winners_circuits(selected_circuit)
@@ -44,6 +49,9 @@ def display_circuits_section() -> None:
             with tab2:
                 constructor_winners = get_constructor_winners(selected_circuit)
                 display_top3_constructors_cards(constructor_winners)
+                
+            with tab3:
+                display_circuit_location_map(circuit_data)
                 
     except (KeyError, IndexError, ValueError) as e:
         st.error(f"Error processing circuit data: {str(e)}")
@@ -88,3 +96,40 @@ def display_circuit_image(wiki_url: Optional[str], circuit_name: str) -> None:
             st.warning("Circuit image not available.")
     else:
         st.info("Wikipedia URL not available for this circuit.")
+        
+        
+        
+def display_circuit_location_map(circuit_data: Dict[str, Any]) -> None:
+    """Display circuit location on an interactive map."""
+    st.markdown("### 🗺️ Circuit Location")
+    
+    lat = circuit_data.get('lat')
+    lng = circuit_data.get('lng')
+    
+    if lat and lng:
+        try:
+            lat_float = float(lat)
+            lng_float = float(lng)
+            
+            # Create map dataframe
+            map_data = pd.DataFrame({
+                'lat': [lat_float],
+                'lon': [lng_float],
+                'name': [circuit_data.get('name', 'Unknown Circuit')],
+                'country': [circuit_data.get('country', 'Unknown Country')]
+            })
+            
+            # Display map
+            st.map(map_data, zoom=10)
+            
+            # Additional location info
+            col1, col2 = st.columns(2)
+            with col1:
+                st.info(f"📍 **Latitude:** {lat}")
+            with col2:
+                st.info(f"📍 **Longitude:** {lng}")
+                
+        except (ValueError, TypeError):
+            st.warning("Invalid coordinates data for this circuit.")
+    else:
+        st.warning("Location coordinates not available for this circuit.")
